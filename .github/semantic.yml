@@ -1,0 +1,61 @@
+# Action: https://github.com/marketplace/actions/semantic-pull-request
+# GiHub: https://github.com/amannn/action-semantic-pull-request
+
+name: 'Semantic Commit'
+
+on:
+  pull_request_target:
+    types:
+      - opened
+      - edited
+      - synchronize
+      - labeled
+      - unlabeled
+
+permissions:
+  contents: read
+
+jobs:
+  semantic-commit-checking:
+    name: Validate PR title commit
+    permissions:
+      # allow Semantic to analyze PRs:
+      pull-requests: read
+      # allow Semantic to mark status of analyzed PR:
+      statuses: write
+    runs-on: ubuntu-latest
+    steps:
+      - name: semantic-pull-request
+        uses: amannn/action-semantic-pull-request@v4.5.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          # allowed release prefix types:
+          types: |
+            feat
+            fix
+            docs
+            style
+            refactor
+            test
+            chore
+            revert
+          # allowed release prefix type scopes (for different GitHub bots and else):
+          scopes: |
+            ui
+            core
+            batch
+            deps
+            dev-deps
+          # configure that a scope must always be provided:
+          requireScope: false
+          # customized PR title commit template body:
+          subjectPattern: \[(NO-STORY|LS-[0-9]+)\]+\s.+$
+          # additional error message in GitHub console if subjectPattern is not valid:
+          subjectPatternError: |
+            The subject: "{subject}" found in the pull request title: "{title}" didn't match the configured pattern.
+            Please follow the commit naming convention, ex. fix: [LS-1234] Ticket name from Jira
+          ignoreLabels: |
+            bot
+            dependencies
+            skip-semantic-validation
